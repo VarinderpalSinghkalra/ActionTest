@@ -1,25 +1,10 @@
-name: CI on Push
+name: Basic Push Workflow
 
-on:
-  push:
-    branches:
-      - '**'  # Runs on push to any branch
+on: push
 
 jobs:
-  build:
+  say-hello:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run tests
-        run: npm test
+      - name: Echo Hello
+        run: echo "Hello, this is a basic GitHub Actions workflow!"
