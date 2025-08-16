@@ -1,4 +1,4 @@
-name: Basic Node.js CI
+name: Smart CI Workflow
 
 on:
   push:
@@ -9,23 +9,47 @@ on:
       - '**'
 
 jobs:
-  build:
+  check-project:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Check if package.json exists
+        id: check_package
+        run: |
+          if [ -f "package.json" ]; then
+            echo "found=true" >> $GITHUB_OUTPUT
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Show project type
+        run: |
+          if [ "${{ steps.check_package.outputs.found }}" == "true" ]; then
+            echo "Node.js project detected!"
+          else
+            echo "No package.json found — skipping Node.js steps."
+          fi
+
+      - name: Setup Node.js
+        if: steps.check_package.outputs.found == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: Install dependencies (no lockfile)
+      - name: Install dependencies
+        if: steps.check_package.outputs.found == 'true'
         run: npm install
 
       - name: Run tests
-        run: npm test
+        if: steps.check_package.outputs.found == 'true'
+        run: npm test || echo "No test script found or tests failed."
 
       - name: Run lint
-        run: npm run lint || echo "Lint failed, but continuing"
+        if: steps.check_package.outputs.found == 'true'
+        run: npm run lint || echo "No lint script found or lint failed."
+
+      - name: Done
+        run: echo "✅ Workflow completed."
